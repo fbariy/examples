@@ -1,31 +1,31 @@
 package visitor
 
 sealed trait Expr {
-  def compute: Int
-
   def print: String
+
+  def accept[T](visitor: ExprVisitor[T]): T
 }
 
 class Plus(val left: Expr, val right: Expr) extends Expr {
-  def compute: Int = left.compute + right.compute
-
   def print: String = s"${left.print} + ${right.print}"
+
+  def accept[T](visitor: ExprVisitor[T]): T = visitor.visitPlus(this)
 }
 
 class Literal(val number: Int) extends Expr {
-  def compute: Int = number
-
   def print: String = number.toString
+
+  def accept[T](visitor: ExprVisitor[T]): T = visitor.visitLiteral(this)
 }
 
 class UMinus(val expr: Expr) extends Expr {
-  def compute: Int = -expr.compute
-
   def print: String = s"-${expr.print}"
+
+  def accept[T](visitor: ExprVisitor[T]): T = visitor.visitUMinus(this)
 }
 
 class Minus(val left: Expr, val right: Expr) extends Expr {
-  def compute: Int = new Plus(left, new UMinus(right)).compute
-
   def print: String = s"${left.print} - ${right.print}"
+
+  def accept[T](visitor: ExprVisitor[T]): T = visitor.visitMinus(this)
 }
