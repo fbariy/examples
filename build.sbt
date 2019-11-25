@@ -1,3 +1,7 @@
-name := "Examples on Scala"
-version := "1.0-SNAPSHOT"
+name := "lessons"
+
+version := "0.1"
+
+scalaVersion := "2.12.10"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
