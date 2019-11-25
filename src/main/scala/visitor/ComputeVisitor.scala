@@ -1,6 +1,6 @@
 package visitor
 
-object ComputeExprVisitor extends ExprVisitor[Int] {
+object ComputeVisitor extends ExprVisitor[Int] {
   def visitLiteral(expr: Literal): Int = expr.number
 
   def visitPlus(expr: Plus): Int = visit(expr.left) + visit(expr.right)
