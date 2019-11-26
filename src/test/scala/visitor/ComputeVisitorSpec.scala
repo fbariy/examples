@@ -2,7 +2,7 @@ package visitor
 
 import org.scalatest.FlatSpec
 
-class ComputeVisitorSpec extends FlatSpec with ComputeBehaviors {
+class ComputeVisitorSpec extends FlatSpec {
   "3" should behave like compute(
     new Literal(3),
     3
@@ -15,13 +15,10 @@ class ComputeVisitorSpec extends FlatSpec with ComputeBehaviors {
     new Minus(new Literal(2), new UMinus(new Literal(2))),
     4
   )
-}
 
-trait ComputeBehaviors { this: FlatSpec =>
   def compute(expr: Expr, result: Int): Unit = {
-    it should "equal with result" in {
+    it should "compute in result" in {
       assert(ComputeVisitor.visit(expr) == result)
     }
   }
 }
-
