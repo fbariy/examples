@@ -1,6 +1,7 @@
 package visitor
 
-sealed trait Expr {
+sealed trait Expr
+{
   def accept[T](visitor: ExprVisitor[T]): T
 }
 
