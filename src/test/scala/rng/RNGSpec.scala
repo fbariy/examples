@@ -19,6 +19,9 @@ class RNGSpec extends FlatSpec {
   "A ints(-1)" should "generates empty list" in
     assert(forAll(RNG.ints(-1))(_.isEmpty))
 
+  "A nonNegativeEventInt" should "generates non negative even int numbers" in
+    assert(forAll(RNG.nonNegativeEventInt)(_ % 2 == 0))
+
   def forAll[A](rand: Rand[A])(p: A => Boolean, seed: Long = 0): Boolean = {
     var rng = RNG(seed)
 
