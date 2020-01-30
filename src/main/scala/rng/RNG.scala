@@ -1,5 +1,7 @@
 package rng
 
+import scala.annotation.tailrec
+
 case class RNG(seed: Long) {
   def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DDEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
@@ -20,6 +22,38 @@ object RNG {
 
   def double(rng: RNG): (Double, RNG) = {
     val (number, nextRNG) = rng.nextInt
-    ((number.toDouble / Int.MaxValue).abs, nextRNG)
+    val nonMaxValueInt = if (number == Int.MaxValue) number - 1 else number
+    ((nonMaxValueInt.toDouble / Int.MaxValue).abs, nextRNG)
+  }
+
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
+    val (intNumber, intRNG) = rng.nextInt
+    val (doubleNumber, doubleRNG) = RNG.double(intRNG)
+    ((intNumber, doubleNumber), doubleRNG)
+  }
+
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+    val (pair, nextRNG) = intDouble(rng)
+    (pair.swap, nextRNG)
+  }
+
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (firstNumber, firstRNG) = RNG.double(rng)
+    val (secondNumber, secondRNG) = RNG.double(firstRNG)
+    val (thirdNumber, thirdRNG) = RNG.double(secondRNG)
+    ((firstNumber, secondNumber, thirdNumber), thirdRNG)
+  }
+
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    @tailrec
+    def intsIter(currentRNG: RNG, acc: List[Int] = List()): (List[Int], RNG) = {
+      if (acc.size >= count) (acc, currentRNG)
+      else {
+        val (number, nextRNG) = currentRNG.nextInt
+        intsIter(nextRNG, acc :+ number)
+      }
+    }
+
+    intsIter(rng)
   }
 }
