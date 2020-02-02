@@ -1,7 +1,5 @@
 package rng
 
-import scala.annotation.tailrec
-
 case class RNG(seed: Long) {
   def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DDEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
@@ -33,9 +31,12 @@ object RNG {
   def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
     map2(ra, rb)((_, _))
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = fs match {
+    case List() => rng => (List(), rng)
+    case head :: tail => map2(head, sequence(tail))((a, b) => b :+ a)
+  }
 
-  def nonNegativeEventInt(rng: RNG): (Int, RNG) =
+  def nonNegativeEvenInt(rng: RNG): (Int, RNG) =
     map(nonNegativeInt)(value => value - value % 2)(rng)
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
@@ -43,6 +44,8 @@ object RNG {
     val nonMinValueInt = if (number == Int.MinValue) number + 1 else number
     (nonMinValueInt.abs, nextRNG)
   }
+
+  def int: Rand[Int] = _.nextInt
 
   def double(rng: RNG): (Double, RNG) =
     map(_.nextInt)(number => {
@@ -63,16 +66,6 @@ object RNG {
     ((firstNumber, secondNumber, thirdNumber), thirdRNG)
   }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
-    @tailrec
-    def intsIter(currentRNG: RNG, acc: List[Int] = List()): (List[Int], RNG) = {
-      if (acc.size >= count) (acc, currentRNG)
-      else {
-        val (number, nextRNG) = currentRNG.nextInt
-        intsIter(nextRNG, acc :+ number)
-      }
-    }
-
-    intsIter(rng)
-  }
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) =
+    sequence(List.fill(count)(int))(rng)
 }
