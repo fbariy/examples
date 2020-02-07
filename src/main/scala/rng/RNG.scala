@@ -14,12 +14,8 @@ object RNG {
 
   def unit[A](value: A): Rand[A] = rng => (value, rng)
 
-  def map[A,B](rand: Rand[A])(f: A => B): Rand[B] = {
-    rng => {
-      val (value, nextRNG) = rand(rng)
-      (f(value), nextRNG)
-    }
-  }
+  def map[A,B](rand: Rand[A])(f: A => B): Rand[B] =
+    flatMap(rand) { a => unit(f(a)) }
 
   def flatMap[A, B](rand: Rand[A])(f: A => Rand[B]): Rand[B] =
     rng => {
@@ -28,11 +24,7 @@ object RNG {
     }
 
   def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
-    rng => {
-      val (a, aRNG) = ra(rng)
-      val (b, bRNG) = rb(aRNG)
-      (f(a, b), bRNG)
-    }
+    flatMap(ra) { a => flatMap(rb)( b => unit(f(a, b))) }
 
   def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
     map2(ra, rb)((_, _))
