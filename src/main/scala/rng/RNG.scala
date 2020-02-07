@@ -21,6 +21,12 @@ object RNG {
     }
   }
 
+  def flatMap[A, B](rand: Rand[A])(f: A => Rand[B]): Rand[B] =
+    rng => {
+      val (a, rng2) = rand(rng)
+      f(a)(rng2)
+    }
+
   def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     rng => {
       val (a, aRNG) = ra(rng)
@@ -44,6 +50,14 @@ object RNG {
     val nonMinValueInt = if (number == Int.MinValue) number + 1 else number
     (nonMinValueInt.abs, nextRNG)
   }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] =
+    flatMap(nonNegativeInt)(a => {
+      val mod = a % n
+      if (a + (n - 1) - mod >= 0) unit(mod)
+      else nonNegativeLessThan(n)
+    })
+
 
   def int: Rand[Int] = _.nextInt
 
